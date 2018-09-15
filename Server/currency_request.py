@@ -19,7 +19,7 @@ def exchange(base,other):
     data=resp.json()
     
     rate=data['rates'][other]
-    print("1 {} is equal to {} {}".format(base,rate,other))
+    #print("1 {} is equal to {} {}".format(base,rate,other))
    
     return(rate)
 

@@ -33,7 +33,7 @@ def enable_cors(response):
 def index():
     
     eur_usd=cr.exchange("EUR","USD")
-    exch_rate=pd.DataFrame([[1.0,1/eur_usd],[eur_usd,1.0]],index=['EUR','USD'],columns=['EUR','USD']) #1 USD=X EUR
+    exch_rate=pd.DataFrame([[1.0,1/eur_usd],[eur_usd,1.0]],index=['EUR','USD'],columns=['EUR','USD']) #1 eur=X usd
 
     nowtime=datetime.datetime.now()
     
@@ -79,8 +79,8 @@ def index():
         conn.commit()
 
     conn.close()
-    return()
-    #return(jsonify({'hello_key':'hello_value'}))
+    #return()
+    return(jsonify({'hello_key':'hello_value'}))
 
 @app.route("/login",methods=['GET','POST'])
 def login():
@@ -139,6 +139,10 @@ def wallets():
     df_trans=pd.read_sql_query("SELECT * FROM trans;",conn)
     conn.close()
     
+    all_currencies=df_trans['currency_from'].add(df_trans['currency_to'])
+    all_currencies=all_currencies.add(df_wallets['currency'])
+    all_currencies=all_currencies.unique()
+
     try:
         #current_user=app.config['USERNAME']
         current_user=((df_user.loc[df_user['xtoken']==X_Token])['username'].tolist())[0]
