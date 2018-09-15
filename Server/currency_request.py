@@ -20,6 +20,8 @@ def exchange(base,other):
     
     rate=data['rates'][other]
     print("1 {} is equal to {} {}".format(base,rate,other))
-    
+   
+    return(rate)
+
 if __name__=="__main__":
-     exchange()
+    exchange("EUR","USD")

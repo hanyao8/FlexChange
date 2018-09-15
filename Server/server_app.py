@@ -13,6 +13,7 @@ import requests
 import json #json dumps and loads
 import pandas as pd
 import datetime
+import currency_request as cr
 
 app=Flask(__name__)
 
@@ -30,8 +31,9 @@ def enable_cors(response):
 
 @app.route("/")
 def index():
-
-    exch_rate=pd.DataFrame([[1.0,0.86],[1/0.86,1.0]],index=['EUR','USD'],columns=['EUR','USD']) #1 USD=X EUR
+    
+    eur_usd=cr.exchange("EUR","USD")
+    exch_rate=pd.DataFrame([[1.0,1/eur_usd],[eur_usd,1.0]],index=['EUR','USD'],columns=['EUR','USD']) #1 USD=X EUR
 
     nowtime=datetime.datetime.now()
     
@@ -77,8 +79,8 @@ def index():
         conn.commit()
 
     conn.close()
-    #return()
-    return(jsonify({'hello_key':'hello_value'}))
+    return()
+    #return(jsonify({'hello_key':'hello_value'}))
 
 @app.route("/login",methods=['GET','POST'])
 def login():
@@ -138,8 +140,6 @@ def wallets():
     conn.close()
     
     try:
-    #if True:
-        
         #current_user=app.config['USERNAME']
         current_user=((df_user.loc[df_user['xtoken']==X_Token])['username'].tolist())[0]
         current_user_rowindex=(df_user.index[df_user['username']==current_user].tolist())[0]
@@ -152,16 +152,16 @@ def wallets():
         df_pending=df_pending.loc[df_pending['wallet_from_id']==current_user_id]
         
         pending_dict={}
-        for wc in df_current_wallet['currency'].unique():
+        for wc in ['EUR','USD']:
             df_temp_pendings=(df_pending.loc[df_pending['currency_from']==wc])
             wc_pendings_list=[]
             for i in range(0,(df_temp_pendings).shape[0]):
-                wc_pendings_list.append({'currency_to':df_temp_pendings['currency_to'][i] ,'amount':df_temp_pendings['amount_from'][i] ,'until':df_temp_pendings['until'][i] })
+                wc_pendings_list.append({'currency_to':df_temp_pendings.iloc[i]['currency_to'] ,'amount':df_temp_pendings.iloc[i]['amount_from'] ,'until':df_temp_pendings.iloc[i]['until'] })
             pending_dict[wc]=wc_pendings_list
                 
 
         n_wallets=current_wallet.shape[0]
-        json_output=json.dumps({'wallets':[{'currency':df_current_wallet['currency'][i] , 'amount':str(df_current_wallet['amount'][i]),'is_main':i==0,'pending':pending_dict[df_current_wallet['currency'][i]] } for i in range(0,n_wallets) ]})
+        json_output=json.dumps({'wallets':[{'currency':df_current_wallet.iloc[i]['currency'] , 'amount':str(df_current_wallet.iloc[i]['amount']),'is_main':i==0,'pending':pending_dict[df_current_wallet.iloc[i]['currency']] } for i in range(0,n_wallets) ]})
         
 
         
