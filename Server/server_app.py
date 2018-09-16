@@ -298,14 +298,14 @@ def transaction():
         
             
             output_message='success'
-            trans_curr_pair=[content['currency_to'],content['currency_from']]
-            trans_curr_pair.sort()
-            if trans_curr_pair == ['EUR','USD']:
-                senti_est_result=se.get_optimism()
-            else:
-                senti_est_result='unavailable'
-            json_output=json.dumps({'success':True,'sentiment estimate result':senti_est_result})
-
+            #trans_curr_pair=[content['currency_to'],content['currency_from']]
+            #trans_curr_pair.sort()
+            #if trans_curr_pair == ['EUR','USD']:
+            #    senti_est_result=se.get_optimism()
+            #else:
+            #    senti_est_result='unavailable'
+            #json_output=json.dumps({'success':True,'sentiment estimate result':senti_est_result})
+            json_output=json.dumps({'success':True})
         else: # if there are insufficient funds for transaction
             json_output=json.dumps({'success':False})
 
