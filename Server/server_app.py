@@ -139,8 +139,8 @@ def wallets():
     df_trans=pd.read_sql_query("SELECT * FROM trans;",conn)
     conn.close()
     
-    all_currencies=df_trans['currency_from'].add(df_trans['currency_to'])
-    all_currencies=all_currencies.add(df_wallets['currency'])
+    all_currencies=df_trans['currency_from'].append(df_trans['currency_to'])
+    all_currencies=all_currencies.append(df_wallets['currency'])
     all_currencies=all_currencies.unique()
 
     try:
@@ -156,7 +156,7 @@ def wallets():
         df_pending=df_pending.loc[df_pending['wallet_from_id']==current_user_id]
         
         pending_dict={}
-        for wc in ['EUR','USD']:
+        for wc in list(all_currencies):
             df_temp_pendings=(df_pending.loc[df_pending['currency_from']==wc])
             wc_pendings_list=[]
             for i in range(0,(df_temp_pendings).shape[0]):
@@ -195,6 +195,7 @@ def transaction():
     
         conn=sq3.connect(dbpath)
         df_user=pd.read_sql_query("SELECT * FROM user;",conn)
+        df_wallets=pd.read_sql_query("SELECT * FROM wallets;",conn)
         df_trans=pd.read_sql_query("SELECT * FROM trans;",conn)
 
 
@@ -203,7 +204,11 @@ def transaction():
 
         current_user_rowindex=(df_user.index[df_user['username']==current_user].tolist())[0]
         current_user_id=df_user['id'][current_user_rowindex]
+        df_wallet_from=df_wallets.loc[df_wallets['user_id']==current_user_id]
+        wallet_from=df_wallet_from.values
+
         
+
         cur=conn.cursor()
         write_query="insert into trans(wallet_from_id, wallet_to_id, currency_from, currency_to, until, amount_from, processed) values(%d,%d,'%s','%s','%s',%.2f,'%s');"%(current_user_id,current_user_id,content['currency_from'],content['currency_to'],content['until'],float(content['amount']),'False')
         
@@ -213,6 +218,11 @@ def transaction():
         #cur.execute("insert into trans(id, wallet_from_id, wallet_to_id, currency_from, currency_to, until, amount_from) values(1,1,1,'EUR','USD','2018-09-18',50.00);")
         
         conn.commit()
+        
+        if not(content['currency_to'] in df_wallets['currency'].tolist()):
+            wallet_query="insert into wallets(user_id,currency,amount) values(%d,'%s',%f)"%(current_user_id,content['currency_to'],0.0)
+            cur.execute(wallet_query)
+            conn.commit()
         #try:
         #success=True
         #except:
