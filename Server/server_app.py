@@ -14,7 +14,7 @@ import json #json dumps and loads
 import pandas as pd
 import datetime
 import currency_request as cr
-import sentiment_estimate as se
+#import sentiment_estimate as se
 
 #if __name__=="__main__":
 #fixer_curr_names=cr.fixerapi_cur_names()
@@ -30,7 +30,7 @@ def enable_cors(response):
    response.headers["Access-Control-Allow-Origin"] = "*"
    response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Token, Accept"
    response.headers["Access-Control-Allow-Methods"] = "OPTIONS, POST, PUT, GET, DELETE"
-   return response
+   return(response)
 
 
 @app.route("/")
@@ -275,7 +275,7 @@ def transaction():
             deduct_from_wallet_query="update wallets set amount=%d where(user_id=%d and currency='%s');"%( (df_wallet_from.loc[df_wallet_from['currency']==content['currency_from']]).iloc[0]['amount']-float(content['amount']) , current_user_id,content['currency_from'] )
 
             cur.execute(deduct_from_wallet_query)
-            conn.commit()
+            #conn.commit()
 
             write_to_trans_query="insert into trans(wallet_from_id, wallet_to_id, currency_from, currency_to, until, amount_from, processed) values(%d,%d,'%s','%s','%s',%.2f,'%s');"%(current_user_id,current_user_id,content['currency_from'],content['currency_to'],content['until'],float(content['amount']),'False')
             
