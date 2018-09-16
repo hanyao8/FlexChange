@@ -14,6 +14,7 @@ import json #json dumps and loads
 import pandas as pd
 import datetime
 import currency_request as cr
+import sentiment_estimate as se
 
 #if __name__=="__main__":
 #fixer_curr_names=cr.fixerapi_cur_names()
@@ -265,13 +266,13 @@ def transaction():
 
 
         #check if balance is enough for a transaction
-        elif (df_wallet_from.loc[df_wallet_from['currency']==content['currency_from']])['amount'][0] - float(content['amount']) > 0:
+        elif (df_wallet_from.loc[df_wallet_from['currency']==content['currency_from']]).iloc[0]['amount'] - float(content['amount']) > 0:
 
 
             cur=conn.cursor()
 
             
-            deduct_from_wallet_query="update wallets set amount=%d where(user_id=%d and currency='%s');"%( (df_wallet_from.loc[df_wallet_from['currency']==content['currency_from']])['amount'][0]-float(content['amount']) , current_user_id,content['currency_from'] )
+            deduct_from_wallet_query="update wallets set amount=%d where(user_id=%d and currency='%s');"%( (df_wallet_from.loc[df_wallet_from['currency']==content['currency_from']]).iloc[0]['amount']-float(content['amount']) , current_user_id,content['currency_from'] )
 
             cur.execute(deduct_from_wallet_query)
             conn.commit()
@@ -297,9 +298,15 @@ def transaction():
         
             
             output_message='success'
-            json_output=json.dumps({'success':True})
+            trans_curr_pair=[content['currency_to'],content['currency_from']]
+            trans_curr_pair.sort()
+            if trans_curr_pair == ['EUR','USD']:
+                senti_est_result=se.get_optimism()
+            else:
+                senti_est_result='unavailable'
+            json_output=json.dumps({'success':True,'sentiment estimate result':senti_est_result})
 
-        else:
+        else: # if there are insufficient funds for transaction
             json_output=json.dumps({'success':False})
 
         conn.close()
